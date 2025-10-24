@@ -16,7 +16,125 @@ class AdventureGame extends StatelessWidget {
         primarySwatch: Colors.deepPurple,
         useMaterial3: true,
       ),
-      home: const GameScreen(),
+      home: const SplashScreen(),
+    );
+  }
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({Key? key}) : super(key: key);
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _rotationAnimation;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _rotationAnimation = Tween<double>(
+      begin: -0.1,
+      end: 0.1,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    ));
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.95,
+      end: 1.05,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _startGame() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => const GameScreen()),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[800],
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'ADVENTURE QUEST',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 2,
+              ),
+            ),
+            const SizedBox(height: 60),
+            AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                return Transform.rotate(
+                  angle: _rotationAnimation.value,
+                  child: Transform.scale(
+                    scale: _scaleAnimation.value,
+                    child: child,
+                  ),
+                );
+              },
+              child: GestureDetector(
+                onTap: _startGame,
+                child: Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: Colors.deepPurple,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.deepPurple.withOpacity(0.5),
+                        blurRadius: 20,
+                        spreadRadius: 5,
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.shield,
+                    size: 100,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 40),
+            const Text(
+              'TAP TO START',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.white70,
+                letterSpacing: 3,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -228,11 +346,7 @@ class _GameScreenState extends State<GameScreen> {
   Widget buildMenuScreen() {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.deepPurple[900]!, Colors.purple[700]!],
-        ),
+        color: Colors.grey[600],
       ),
       child: SafeArea(
         child: SingleChildScrollView(
@@ -311,19 +425,19 @@ class _GameScreenState extends State<GameScreen> {
                       const SnackBar(content: Text('Fully healed!')),
                     );
                   },
-                  color: Colors.green,
+                  color: Colors.grey[300]!,
                 ),
                 const SizedBox(height: 12),
                 MenuButton(
                   label: 'Patrol the Forest',
                   onPressed: () => startQuest(1),
-                  color: Colors.blue,
+                  color: Colors.grey[300]!,
                 ),
                 const SizedBox(height: 12),
                 MenuButton(
                   label: 'Clear the Ruins',
                   onPressed: () => startQuest(2),
-                  color: Colors.orange,
+                  color: Colors.grey[300]!,
                 ),
                 const SizedBox(height: 12),
                 MenuButton(
@@ -379,7 +493,7 @@ class _GameScreenState extends State<GameScreen> {
                       ),
                     );
                   },
-                  color: Colors.purple,
+                  color: Colors.grey[300]!,
                 ),
               ],
             ),
@@ -401,226 +515,191 @@ class _GameScreenState extends State<GameScreen> {
         ),
       ),
       child: SafeArea(
-        child: Column(
-          children: [
-            // Enemy Section
-            Expanded(
-              flex: 2,
-              child: Container(
-                color: Colors.transparent,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Enemy Box
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 20),
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 20.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              currentEnemy!.name.toUpperCase(),
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Lv${(currentEnemy!.str + currentEnemy!.end) ~/ 2}',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          currentEnemy!.name.toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
+                        Text(
+                          'Lv${(currentEnemy!.str + currentEnemy!.end) ~/ 2}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'HP: ${currentEnemy!.hp.clamp(0, currentEnemy!.maxHp)}/${currentEnemy!.maxHp}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 20.0),
-                        child: SizedBox(
-                          width: 200,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                'HP: ${currentEnemy!.hp.clamp(0, currentEnemy!.maxHp)}/${currentEnemy!.maxHp}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(4),
-                                child: LinearProgressIndicator(
-                                  value: (currentEnemy!.hp.clamp(0, currentEnemy!.maxHp) / currentEnemy!.maxHp).clamp(0.0, 1.0),
-                                  minHeight: 16,
-                                  backgroundColor: Colors.grey[700],
-                                  valueColor: AlwaysStoppedAnimation(
-                                    currentEnemy!.hp < currentEnemy!.maxHp * 0.3 ? Colors.red : Colors.green,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                    const SizedBox(height: 4),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: (currentEnemy!.hp.clamp(0, currentEnemy!.maxHp) / currentEnemy!.maxHp).clamp(0.0, 1.0),
+                        minHeight: 16,
+                        backgroundColor: Colors.grey[700],
+                        valueColor: AlwaysStoppedAnimation(
+                          currentEnemy!.hp < currentEnemy!.maxHp * 0.3 ? Colors.red : Colors.green,
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-            // Battle Message Box
-            Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.black87,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.white, width: 2),
-              ),
-              child: SizedBox(
-                height: 80,
-                child: Center(
-                  child: Text(
-                    battleMessage,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+              // Battle Message Box
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.black87,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: SizedBox(
+                  height: 80,
+                  child: Center(
+                    child: Text(
+                      battleMessage,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            // Player Section
-            Expanded(
-              flex: 2,
-              child: Container(
-                color: Colors.transparent,
+              // Player Box
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20.0, bottom: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'PLAYER',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          'Lv${gameState.level}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'HP: ${gameState.hp.clamp(0, gameState.maxHp)}/${gameState.maxHp}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(3),
+                      child: LinearProgressIndicator(
+                        value: (gameState.hp.clamp(0, gameState.maxHp) / gameState.maxHp).clamp(0.0, 1.0),
+                        minHeight: 16,
+                        backgroundColor: Colors.grey[700],
+                        valueColor: AlwaysStoppedAnimation(
+                          gameState.hp < gameState.maxHp * 0.3 ? Colors.red : Colors.green,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Action Buttons inside player box
+                    if (!battleEnded && gameState.hp > 0 && currentEnemy!.hp > 0)
+                      Row(
                         children: [
-                          Text(
-                            'PLAYER',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                          Expanded(
+                            child: FightButton(
+                              label: 'ATTACK',
+                              onPressed: isEnemyTurn ? null : playerAttack,
+                              color: Colors.red,
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Lv${gameState.level}',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.white,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: FightButton(
+                              label: 'SKILL',
+                              onPressed: isEnemyTurn ? null : () => _showSkillMenu(),
+                              color: Colors.blue,
                             ),
                           ),
                         ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20.0, bottom: 16),
-                      child: SizedBox(
-                        width: 200,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'HP: ${gameState.hp.clamp(0, gameState.maxHp)}/${gameState.maxHp}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                              ),
+                      )
+                    else
+                      SizedBox(
+                        width: double.infinity,
+                        height: 40,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.amber,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              currentScreen = 'menu';
+                              currentEnemy = null;
+                              gameState.hp = gameState.maxHp;
+                            });
+                          },
+                          child: const Text(
+                            'RETURN TO TOWN',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
                             ),
-                            const SizedBox(height: 4),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(3),
-                              child: LinearProgressIndicator(
-                                value: (gameState.hp.clamp(0, gameState.maxHp) / gameState.maxHp).clamp(0.0, 1.0),
-                                minHeight: 16,
-                                backgroundColor: Colors.grey[700],
-                                valueColor: AlwaysStoppedAnimation(
-                                  gameState.hp < gameState.maxHp * 0.3 ? Colors.red : Colors.green,
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
-            ),
-            // Action Buttons
-            if (!battleEnded && gameState.hp > 0 && currentEnemy!.hp > 0)
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: GridView.count(
-                  crossAxisCount: 2,
-                  shrinkWrap: true,
-                  childAspectRatio: 2.5,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  children: [
-                    FightButton(
-                      label: 'ATTACK',
-                      onPressed: isEnemyTurn ? null : playerAttack,
-                      color: Colors.red,
-                    ),
-                    FightButton(
-                      label: 'SKILL',
-                      onPressed: isEnemyTurn ? null : () => _showSkillMenu(),
-                      color: Colors.blue,
-                    ),
-                  ],
-                ),
-              )
-            else
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        currentScreen = 'menu';
-                        currentEnemy = null;
-                        gameState.hp = gameState.maxHp;
-                      });
-                    },
-                    child: const Text(
-                      'RETURN TO TOWN',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            const SizedBox(height: 16),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -659,7 +738,7 @@ class _GameScreenState extends State<GameScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple,
+                      backgroundColor: Colors.blue[200],
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     onPressed: () {
@@ -710,6 +789,7 @@ class MenuButton extends StatelessWidget {
         style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,
+          color: Colors.black,
         ),
       ),
     );
@@ -733,6 +813,8 @@ class FightButton extends StatelessWidget {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: onPressed == null ? Colors.grey : color,
+        minimumSize: const Size(0, 40),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
       onPressed: onPressed,
       child: Text(
